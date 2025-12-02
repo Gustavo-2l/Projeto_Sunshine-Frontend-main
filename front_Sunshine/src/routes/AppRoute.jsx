@@ -21,11 +21,11 @@ import { DashboardPaciente } from '../pages/DashboardPaciente';
 import { Solicitacoes } from '../pages/Solicitacoes';
 import { ChatIA} from '../pages/ChatIa';
 import { Paciente } from '../pages/Pacientes';
+
 // Páginas protegidas
 /*
 import { Relatorios } from '../pages/Relatorio';
 
-import { PacienteDetalhes } from '../pages/Pacientedetalhe';
 import { SessaoDetalhes } from '../pages/SessaoDetalhes';
 
 /* ==============================
