@@ -6,100 +6,44 @@
 // PORQUE: useEffect executa código quando o componente é criado (carregar lista de psicólogos)
 import { useState, useEffect } from 'react';
 import  CalendarComponent  from "../components/Calendar"
-// Hook para navegação entre páginas sem recarregar a página (SPA - Single Page Application)
-// PORQUE: Precisamos redirecionar o usuário para o dashboard após enviar a solicitação
 import { useNavigate } from 'react-router-dom';
- 
-// Context personalizado para autenticação do usuário
-// PORQUE: Precisamos dos dados do usuário logado (nome, email) para enviar na solicitação
 import { useAuth } from '../context/AuthContext';
- 
-// API mockada para simulação de backend
-// PORQUE: Em desenvolvimento, simulamos um servidor real para testar funcionalidades
-
- 
-// Componentes reutilizáveis do sistema
-// PORQUE: Mantém consistência visual e reduz duplicação de código
+import { psychologistService, requestService } from "../services/apiService";
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
- 
-// Ícone da biblioteca Lucide React
-// PORQUE: Ícones melhoram a UX e tornam a interface mais intuitiva
 import { Bell } from 'lucide-react';
- 
-// Biblioteca para notificações toast
-// PORQUE: Feedback visual imediato para o usuário sobre sucesso/erro das ações
 import toast from 'react-hot-toast';
  
 // ===== COMPONENTE PRINCIPAL =====
 // ARQUITETURA: Componente funcional React usando hooks (padrão moderno)
 // PORQUE: Mais simples que classes, melhor performance, hooks facilitam reutilização de lógica
 export const Agendamento = () => {
- 
-  // ===== HOOKS E ESTADO =====
-  // PADRÃO: Declaramos todos os hooks no topo do componente (regra do React)
- 
-  // Extrai dados do usuário logado do contexto global
-  // PORQUE: Precisamos do nome e email para preencher automaticamente a solicitação
-  const { user } = useAuth();
- 
-  // Hook para navegação programática entre rotas
-  // PORQUE: Após enviar solicitação, redirecionamos para dashboard sem reload
+  const { user } = useAuth();  
   const navigate = useNavigate();
- 
-  // ===== ESTADOS LOCAIS DO COMPONENTE =====
-  // PADRÃO: Cada estado controla uma parte específica da interface
- 
-  // Estado: ID do psicólogo selecionado no dropdown
-  // PORQUE: Precisamos saber qual psicólogo o paciente escolheu
-  // TIPO: string (vazio inicialmente, depois ID numérico como string)
+
   const [selectedPsychologist, setSelectedPsychologist] = useState('');
- 
-  // Estado: Lista de todos os psicólogos disponíveis
-  // PORQUE: Populamos o dropdown com dados vindos da API
-  // TIPO: array de objetos {id, name, specialty}
   const [psychologists, setPsychologists] = useState([]);
- 
-  // Estado: Controla se o formulário está sendo enviado
-  // PORQUE: Mostra loading no botão e previne múltiplos envios
-  // TIPO: boolean (false = normal, true = enviando)
   const [submitting, setSubmitting] = useState(false);
- 
-  // Estado: Dados do formulário de solicitação
-  // PORQUE: Armazena informações digitadas pelo usuário
-  // TIPO: objeto com description (string) e urgency (string)
   const [requestData, setRequestData] = useState({
-    description: '', // Texto livre descrevendo a necessidade
-    urgency: 'media' // Padrão: urgência média
+    description: '', 
+    urgency: 'media'
   });
  
-  // ===== EFEITOS COLATERAIS =====
-  // CONCEITO: useEffect executa código em momentos específicos do ciclo de vida
-  // QUANDO: Array vazio [] = executa apenas uma vez quando componente é criado
-  // PORQUE: Precisamos carregar a lista de psicólogos assim que a página abre
+  
   useEffect(() => {
-    loadPsychologists(); // Chama função que busca dados da API
-  }, []); // Dependências vazias = executa só na montagem do componente
+    loadPsychologists(); 
+  }, []); 
  
-  // ===== FUNÇÕES =====
-  // PADRÃO: Funções assíncronas para operações que demoram (API calls)
- 
-  // Função para carregar lista de psicólogos da API
-  // ASYNC/AWAIT: Padrão moderno para lidar com operações assíncronas
-  // PORQUE: Chamadas de API são assíncronas (não sabemos quanto tempo demora)
+  
   const loadPsychologists = async () => {
- 
     try {
       // Chama API mockada que simula busca no servidor
       // AWAIT: Espera a resposta antes de continuar
-      const data = await mockApi.getPsychologists();
+      const data = await psychologistService.getPsychologists();
  
-      // Atualiza estado com dados recebidos
-      // PORQUE: Isso faz o React re-renderizar o componente com novos dados
+      
       setPsychologists(data);
-    } catch {
-      // Se der erro (rede, servidor, etc), mostra notificação
-      // PORQUE: Usuário precisa saber que algo deu errado
+    } catch {     
       toast.error('Erro ao carregar psicólogos');
     }
   };
@@ -108,60 +52,36 @@ export const Agendamento = () => {
   // EVENT HANDLER: Função que responde a eventos do usuário (submit do form)
   // ASYNC: Porque envia dados para API (operação que demora)
   const handleRequestSubmit = async (e) => {
-    // Previne comportamento padrão do formulário (reload da página)
-    // PORQUE: Em SPAs, não queremos recarregar a página
     e.preventDefault();
- 
-    // ===== VALIDAÇÃO CLIENT-SIDE =====
-    // PORQUE: Feedback imediato, não precisa ir ao servidor para validar
-    // PERFORMANCE: Evita requisições desnecessárias
     if (!selectedPsychologist || !requestData.description) {
-      toast.error('Selecione um psicólogo e descreva sua necessidade');
-      return; // Para execução se validação falhar
+      toast.error('Preencha todos os campos obrigatórios');
+      return; 
     }
- 
-    // Ativa estado de loading
-    // PORQUE: Desabilita botão e mostra spinner para evitar duplo envio
-    // UX: Usuário sabe que algo está acontecendo
     setSubmitting(true);
  
     try {
-      // ===== ENVIO PARA API =====
-      // Monta objeto com todos os dados necessários
-      // ESTRUTURA: Combina dados do usuário logado + dados do formulário
-      await mockApi.createRequest({
-        patientName: user.name,           // Do contexto de autenticação
-        patientEmail: user.email,         // Do contexto de autenticação
-        patientPhone: user.phone || '(11) 99999-9999', // Fallback se não tiver telefone
-        preferredPsychologist: parseInt(selectedPsychologist), // Converte string para número
-        description: requestData.description,  // Do estado do formulário
-        urgency: requestData.urgency          // Do estado do formulário
+      await requestService.createRequest({
+        patient_id: user.id,
+        patient_name: user.name,
+        patient_email: user.email,
+        patient_phone: user.phone,
+        preferred_psychologist: parseInt(selectedPsychologist), 
+        description: requestData.description,
+        urgency: requestData.urgency,
+        preferred_dates: [],
+        preferred_times: []
       });
- 
-      // ===== SUCESSO =====
-      // Mostra feedback positivo
+      
       toast.success('Solicitação enviada! O psicólogo avaliará e entrará em contato se aceitar você como paciente.');
- 
-      // Redireciona para dashboard
-      // PORQUE: Fluxo natural após completar ação
       navigate('/dashboard');
  
     } catch {
-      // ===== ERRO =====
-      // Qualquer erro (rede, servidor, validação) cai aqui
-      // UX: Usuário sabe que algo deu errado
       toast.error('Erro ao enviar solicitação');
     } finally {
-      // ===== CLEANUP =====
-      // SEMPRE executa, independente de sucesso ou erro
-      // PORQUE: Precisamos desativar loading em qualquer caso
       setSubmitting(false);
     }
   };
   const [selectedDate, setSelectedDate] = useState(new Date());
-  // ===== RENDERIZAÇÃO (JSX) =====
-  // CONCEITO: JSX = JavaScript + XML, permite escrever HTML dentro do JavaScript
-  // PROCESSO: React converte JSX em elementos DOM reais
   return (
  
     // ===== CONTAINER PRINCIPAL =====

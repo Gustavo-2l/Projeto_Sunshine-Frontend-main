@@ -16,17 +16,17 @@ import { Login } from '../pages/Login';
 import { Register } from '../pages/Register';
 import { Notfound } from '../pages/Notfound';
 import { Agendamento } from '../pages/Agendamento';
-
-// Páginas protegidas
-/*
 import { DashboardPsicologo } from '../pages/DashboardPsicologo';
 import { DashboardPaciente } from '../pages/DashboardPaciente';
+import { Solicitacoes } from '../pages/Solicitacoes';
 import { ChatIA} from '../pages/ChatIa';
-import { Relatorios } from '../pages/Relatorio';
 import { Paciente } from '../pages/Pacientes';
+// Páginas protegidas
+/*
+import { Relatorios } from '../pages/Relatorio';
+
 import { PacienteDetalhes } from '../pages/Pacientedetalhe';
 import { SessaoDetalhes } from '../pages/SessaoDetalhes';
-import { Solicitacoes } from '../pages/Solicitacoes';
 
 /* ==============================
    Componente de rota protegida
@@ -85,8 +85,11 @@ export const AppRoutes = () => {
       <Route path="/register" element={<PublicRoute><Register /></PublicRoute>} />
 
       {/* Protegidas  */}
-     
-
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/chat-ia" element={<ProtectedRoute><ChatIA /></ProtectedRoute>} />
+      <Route path="/agendamento" element={<ProtectedRoute><Agendamento/></ProtectedRoute>} />
+      <Route path="/solicitacoes" element={<ProtectedRoute><Solicitacoes /></ProtectedRoute>} />
+      <Route path="/pacientes" element={<ProtectedRoute><Paciente /></ProtectedRoute>} />
       {/* Página 404 */}
       <Route path="*" element={<Notfound />} />
     </Routes>
